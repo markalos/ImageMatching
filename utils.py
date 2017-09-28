@@ -5,6 +5,12 @@ import cv2
 from PIL import Image
 import numpy as np
 
+def mergeImageData(backGround, foreGround):
+	newImage = np.ndarray(backGround.shape)
+	newImage[:, :, 0] = backGround[:, :, 0]
+	newImage[:, :, 1] = foreGround[:, :, 1]
+	cv2.imwrite('match.png', newImage)
+
 def mergeImage(backGroundFile, foreGroundFile):
 	backGround = cv2.imread(backGroundFile)
 	foreGround = cv2.imread(foreGroundFile)
@@ -76,7 +82,7 @@ def mplImageShow(image, cmapType = 'gray'):
 	plt.imshow(image, cmap = cmap)
 	plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
 	plt.show()
-	
+
 
 def flipImage(fileName):
 	im = np.flipud(cv2.imread(fileName))

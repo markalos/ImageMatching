@@ -68,10 +68,11 @@ def translate(imgFile, fromPoint, toPoint, targetSize):
 	plt.subplot(122),plt.imshow(dst),plt.title('Output')
 	plt.show()
 
-def scaleImage(rad, scale, bpcenter, semcenter, image, newShape):
+# newImage = scaleImage(-rad, scale, semcenter, bpcenter, bpImage, semImage.shape)
+def scaleImage(rad, scale, semcenter, bpcenter, sourceImage, newShape):
 	newImage = np.ndarray(newShape, dtype = int)
 	# newCenter = center + (newShape[0] - image.shape[0]) // 2
-	lim = image.shape[0] - 1
+	lim = sourceImage.shape[0] - 1
 	def getCorrespondPoint(p) :
 		mapto = (np.array([p[0] - semcenter[0], p[1] - semcenter[1]]) / scale)
 		mapto = utils.rotatePoint(mapto, rad) + bpcenter
@@ -81,8 +82,21 @@ def scaleImage(rad, scale, bpcenter, semcenter, image, newShape):
 		for j in range(newShape[1]) :
 			npoint = getCorrespondPoint([i,j]).astype(int)
 			# print (npoint)
-			newImage[i][j] = image[npoint[0]][npoint[1]]
+			newImage[i][j] = sourceImage[npoint[0]][npoint[1]]
 	cv2.imwrite("scale.png", newImage)
+	return newImage
+
+def scaleSourceImage(img, oldcenter, newCenter, newShape, scale, rad):
+	newImage = np.ndarray(newShape, dtype = int)
+	for i in range(img.shape[0]) :
+		for j in range(img.shape[1]) :
+			x = (j - oldcenter[0]) * scale
+			y = (i - oldcenter[1]) * scale
+			newXY = utils.rotatePoint([x, y], rad) + newCenter
+			newXY = np.clip(newXY, 0, newShape[0] - 1).astype(int)
+			newImage[newXY[1]][newXY[0]] = img[i][j]
+	cv2.imwrite("scale.png", newImage)
+	return newImage
 
 def main():
 	files = ["Locations.txt",
@@ -90,6 +104,18 @@ def main():
 	]
 	sempoints, semcenter = getOffset(files[0])
 	bppoints, bpcenter = getOffset(files[1])
+	semImage = cv2.imread('extended_trimmed_0001.tif')
+	bpImage = cv2.imread('extended_flipped.png')
+	def drawFeatures(points, imageSource, color, targetFile, showFig = False):
+		pass
+		plotWithoutShow(points, color)
+		# plotWithoutShow(bppoints + semcenter, "blue")
+		plt.imshow(imageSource)
+		plt.savefig(targetFile, transparent=True, bbox_inches='tight', pad_inches=0)
+		if showFig:
+			plt.show()
+	# drawFeatures(bppoints + bpcenter, bpImage, 'blue', 'model_features.png')
+	# drawFeatures(sempoints + semcenter, semImage, 'red', 'SEM_features.png')
 	# targetSize = cv2.imread('extended_trimmed_0001.tif', 0).shape
 	# fromPoint = (sempoints[:4])
 	# toPoint = (bppoints[:4])
@@ -97,13 +123,16 @@ def main():
 	semr = getR(sempoints)
 	bpr = getR(bppoints)
 	scale = semr / bpr
+	rad = utils.angle(sempoints[0], bppoints[1])
+	# newImage = scaleSourceImage(bpImage, bpcenter, semcenter, semImage.shape, scale, rad)
+	newImage = scaleSourceImage(semImage, semcenter, bpcenter, bpImage.shape, bpr / semr, -rad)
+
 	bppoints = bppoints * scale
-	rad = utils.angle(sempoints[0], bppoints[0])
 	bppoints = utils.rotatePointArray(bppoints, -rad)
-	semImage = cv2.imread('extended_trimmed_0001.tif')
-	bpImage = cv2.imread('extended_flipped.png')
-	scaleImage(rad, scale, bpcenter, semcenter, bpImage, semImage.shape)
-	utils.mergeImage('scale.png', 'extended_trimmed_0001.tif')
+	# print (bppoints)
+	utils.mergeImageData(bpImage, newImage)
+	# newImage = scaleImage(rad, scale, semcenter, bpcenter, bpImage, semImage.shape)
+	
 	# plotWithoutShow(sempoints + semcenter)
 	# plotWithoutShow(bppoints + semcenter, "blue")
 	# plt.imshow(semImage)
