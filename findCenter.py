@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import cv2
 
 import utils
+import MathUtil
 
 
 def distanceEuclidean(a, b):
@@ -123,12 +124,13 @@ def main():
 	semr = getR(sempoints)
 	bpr = getR(bppoints)
 	scale = semr / bpr
-	rad = utils.angle(sempoints[0], bppoints[1])
+	# rad = -utils.angle(sempoints[0], bppoints[1])
+	rad = MathUtil.getBestMatchAngle(bppoints.tolist(), sempoints.tolist())
 	# newImage = scaleSourceImage(bpImage, bpcenter, semcenter, semImage.shape, scale, rad)
-	newImage = scaleSourceImage(semImage, semcenter, bpcenter, bpImage.shape, bpr / semr, -rad)
+	newImage = scaleSourceImage(semImage, semcenter, bpcenter, bpImage.shape, bpr / semr, rad)
 
 	bppoints = bppoints * scale
-	bppoints = utils.rotatePointArray(bppoints, -rad)
+	bppoints = utils.rotatePointArray(bppoints, rad)
 	# print (bppoints)
 	utils.mergeImageData(bpImage, newImage)
 	# newImage = scaleImage(rad, scale, semcenter, bpcenter, bpImage, semImage.shape)

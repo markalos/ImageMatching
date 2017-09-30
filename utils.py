@@ -7,7 +7,7 @@ import numpy as np
 
 def mergeImageData(backGround, foreGround):
 	newImage = np.ndarray(backGround.shape)
-	newImage[:, :, 0] = backGround[:, :, 0]
+	newImage[:, :, 2] = backGround[:, :, 0]
 	newImage[:, :, 1] = foreGround[:, :, 1]
 	cv2.imwrite('match.png', newImage)
 
@@ -15,8 +15,8 @@ def mergeImage(backGroundFile, foreGroundFile):
 	backGround = cv2.imread(backGroundFile)
 	foreGround = cv2.imread(foreGroundFile)
 	newImage = np.ndarray(backGround.shape)
-	newImage[:, :, 0] = backGround[:, :, 0]
-	newImage[:, :, 1] = foreGround[:, :, 1]
+	newImage[:, :, 1] = backGround[:, :, 0]
+	newImage[:, :, 0] = foreGround[:, :, 1]
 	cv2.imwrite('match.png', newImage)
 
 
@@ -71,6 +71,9 @@ def length(v):
 def angle(v1, v2):
 	return math.acos(dotproduct(v1, v2) / (length(v1) * length(v2)))
 
+def getBestMatchi():
+	pass
+
 
 def opencvImageShow(image, title):
 	cv2.imshow(title, image)
@@ -93,7 +96,7 @@ def main():
 	print ('utils.main')
 	# extendImage('flipped.png')
 	# flipImage('model.png')
-	# mergeImage('scale.png', 'extended_trimmed_0001.tif')
+	mergeImage('scale.png', 'extended_flipped.png')
 
 
 if __name__ == '__main__':
